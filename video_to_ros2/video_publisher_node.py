@@ -25,12 +25,28 @@ class VideoPublisher(Node):
         self.declare_parameter("ifile_video", "videos/video.mp4")
         self.ifile_video = self.get_parameter("ifile_video").value
 
-        self.load_video()
+        picture_format_tuples = (".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".gif")
+
+        if self.ifile_video.endswith(picture_format_tuples):
+            self.load_image()
+        else:
+            self.load_video()
 
     def publish_frames(self, opencv_img):
         img_msg: Image = self.cv_bridge.cv2_to_imgmsg(opencv_img, encoding="passthrough")
 
         self.frame_publisher.publish(img_msg)
+
+
+    def load_image(self):
+        img = cv2.imread(self.ifile_video)
+
+        sleep_time = (1.0/60.0)
+
+        while True:
+            self.publish_frames(img)
+            time.sleep(sleep_time)
+
 
     def load_video(self):
         capture = cv2.VideoCapture(self.ifile_video)
